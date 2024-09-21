@@ -1,4 +1,4 @@
-## 抖音自动并发批量上传视频
+## 抖音并发批量自动化上传视频
 参考了 https://github.com/Superheroff/douyin_uplod 这个项目，去除了视频生成拼接等的代码。
 
 代码简单，方便和其他爬虫项目对接。
@@ -19,7 +19,7 @@ python get_cookie.py
 python main.py
 ```
 
-在main.py中配置video_data_list，path写video目录下的视频文件名称，运行python main.py 可并发执行上传
+在main.py中配置video_data_list，path写video目录下的视频文件名称，运行python main.py 可并发执行自动化上传
 
 ```python
     video_data_list = [
@@ -36,6 +36,9 @@ python main.py
         # ...
     ]
 ```
+如上配置后运行main.py会打开两个无头浏览器同步执行自动化上传任务
+<img width="1486" alt="image" src="https://github.com/user-attachments/assets/e6996b48-838c-42b2-a5ac-fd7630b7e1a2">
+
 
 
 --- 
