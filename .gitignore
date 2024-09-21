@@ -6,5 +6,10 @@ logs
 img
 **/__pycache__/
 
+# 忽略 video 和 cookie 文件夹下的所有文件
 video/*
 cookie/*
+
+# 保留 video 和 cookie 文件夹（通过保留 .gitkeep 文件）
+!video/.gitkeep
+!cookie/.gitkeep
