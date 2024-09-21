@@ -3,11 +3,11 @@ import os
 import traceback
 from utils.logger import logger
 from playwright.async_api import Playwright, async_playwright
-from config import config
+from utils.config import config
 
 
 class DouyinUploader:
-    def __init__(self, timeout: int, cookie_file: str):
+    def __init__(self, timeout: int, cookie_file: str, video_data: object):
         self.timeout = timeout * 1000  # 将超时时间转换为毫秒
         self.cookie_file = cookie_file
         self.ua = {
@@ -15,6 +15,7 @@ class DouyinUploader:
             "app": "com.ss.android.ugc.aweme/110101 Android 5.1.1",
         }
         self.video_path = config.video_path
+        self.video_data = video_data
         self.ensure_video_path_exists()
 
     def ensure_video_path_exists(self):
@@ -54,7 +55,7 @@ class DouyinUploader:
             await page.locator(".container-drag-info-Tl0RGH").wait_for(state="visible")
             logger.info("文件上传按钮已加载可见")
 
-            file_path = os.path.join(self.video_path, "aa.mp4")
+            file_path = os.path.join(self.video_path, self.video_data["path"])
             # 上传文件
             await page.set_input_files("input[type='file']", file_path)
             logger.info("文件已成功上传")
@@ -90,14 +91,11 @@ class DouyinUploader:
         """输入视频标题和标签"""
         title_css_class = ".container-sGoJ9f"
         await page.locator(f"{title_css_class} > div").click()
-        await page.type(title_css_class, "可可爱爱")
+        await page.type(title_css_class, self.video_data["title"])
 
         css_selector = ".zone-container"
         await page.locator(".ace-line > div").click()
-        video_desc_tag = [
-            "#旭旭宝宝",
-            "#疯狂小杨哥",
-        ]
+        video_desc_tag = self.video_data["desc"]
         for tag in video_desc_tag:
             await page.type(css_selector, tag)
             await page.press(css_selector, "Space")
@@ -159,15 +157,37 @@ def find_files(directory, extension):
     ]
 
 
-def run():
+async def run(video_data):
     """程序运行入口"""
     cookie_files = find_files("cookie", ".json")
 
     for index, cookie_file in enumerate(cookie_files, start=1):
         logger.info(f"正在使用账号[{index}]发布作品")
-        uploader = DouyinUploader(60, cookie_file)
-        asyncio.run(uploader.main())
+        uploader = DouyinUploader(60, cookie_file, video_data)
+        await uploader.main()
+
+
+async def main():
+    video_data_list = [
+        {
+            "title": "可可爱爱的一天",
+            "desc": ["开心的一天", "#旭旭宝宝", "#宝妈"],
+            "path": "aa.mp4",
+        },
+        {
+            "title": "美好的一刻",
+            "desc": ["旅行", "#风景", "#美食"],
+            "path": "aa.mp4",
+        },
+    ]
+
+    # 创建任务列表，并发执行
+    tasks = [run(video_data) for video_data in video_data_list]
+
+    # 并发执行所有任务
+    await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
-    run()
+    # 运行主异步函数
+    asyncio.run(main())
