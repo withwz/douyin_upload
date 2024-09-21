@@ -1,0 +1,10 @@
+*.pyc
+backend
+.vscode
+.DS_Store
+logs
+img
+**/__pycache__/
+
+video/*
+cookie/*
