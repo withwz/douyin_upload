@@ -80,12 +80,42 @@ class DouyinUploader:
             logger.info("页面跳转成功，准备输入标题和标签")
             await self.input_video_title_and_tags(page)
 
+            await self.set_declaration(page)
+
             # 点击发布按钮
             await self.publish_video(page)
 
         except Exception as e:
             logger.error(f"发布视频过程中出错: {e}")
             traceback.print_exc()
+
+    async def set_declaration(self, page):
+        """添加非原创声明"""
+
+        # 点击添加非原创声明按钮
+        await page.locator(".addUserDeclaration-Iw_U0p").click()
+
+        await page.wait_for_timeout(500)
+
+        content_network_locator = page.locator("span.semi-radio-addon").filter(
+            has_text="内容取材网络"
+        )
+        await content_network_locator.scroll_into_view_if_needed()
+        await content_network_locator.click(force=True)
+
+        await page.wait_for_timeout(500)
+
+        source_outside_locator = page.locator("span.semi-radio-addon").filter(
+            has_text="取材站外"
+        )
+        await source_outside_locator.click(force=True)
+
+        await page.wait_for_timeout(500)
+
+        # 点击 '确定' 按钮
+        confirm_button = page.locator(".btnWrapper-gQSo9N span").filter(has_text="确定")
+        await confirm_button.scroll_into_view_if_needed()
+        await confirm_button.click()
 
     async def input_video_title_and_tags(self, page):
         """输入视频标题和标签"""
@@ -115,6 +145,7 @@ class DouyinUploader:
             )
 
             while True:
+                await page.wait_for_timeout(10000)
                 # 点击发布按钮
                 await page.get_by_role("button", name="发布", exact=True).click()
                 logger.info("发布按钮点击成功，继续等待页面跳转")
@@ -167,6 +198,23 @@ async def run(video_data):
         await uploader.main()
 
 
+async def upload_in_batches(video_data_list, batch_size=5, delay=20):
+    for i in range(0, len(video_data_list), batch_size):
+        # 每次取 batch_size 个任务
+        batch = video_data_list[i : i + batch_size]
+
+        # 创建任务列表，并发执行本批次
+        tasks = [run(video_data) for video_data in batch]
+
+        # 并发执行本批次任务
+        await asyncio.gather(*tasks)
+
+        # 如果还有下一批任务，等待 delay 秒
+        if i + batch_size < len(video_data_list):
+            print(f"等待 {delay} 秒后开始上传下一批...")
+            await asyncio.sleep(delay)
+
+
 async def main():
     video_data_list = [
         {
@@ -184,8 +232,7 @@ async def main():
     # 创建任务列表，并发执行
     tasks = [run(video_data) for video_data in video_data_list]
 
-    # 并发执行所有任务
-    await asyncio.gather(*tasks)
+    await upload_in_batches(video_data_list)
 
 
 if __name__ == "__main__":
