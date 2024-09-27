@@ -4,6 +4,7 @@ import traceback
 from utils.logger import logger
 from playwright.async_api import Playwright, async_playwright
 from utils.config import config
+from utils.upload_config import upload_data_config
 
 
 class DouyinUploader:
@@ -216,23 +217,11 @@ async def upload_in_batches(video_data_list, batch_size=5, delay=20):
 
 
 async def main():
-    video_data_list = [
-        {
-            "title": "可可爱爱的一天",
-            "desc": ["开心的一天", "#旭旭宝宝", "#宝妈"],
-            "path": "aa.mp4",
-        },
-        {
-            "title": "美好的一刻",
-            "desc": ["旅行", "#风景", "#美食"],
-            "path": "aa.mp4",
-        },
-    ]
 
     # 创建任务列表，并发执行
-    tasks = [run(video_data) for video_data in video_data_list]
+    tasks = [run(video_data) for video_data in upload_data_config]
 
-    await upload_in_batches(video_data_list)
+    await upload_in_batches(upload_data_config)
 
 
 if __name__ == "__main__":
