@@ -20,7 +20,7 @@ def rename_files(directory):
         print(f"文件 '{filename}' 已重命名为 '{new_name}'")
 
         # 停止在 100 个文件后
-        if idx >= 100:
+        if idx >= 1000:
             break
 
 

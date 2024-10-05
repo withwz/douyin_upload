@@ -81,7 +81,8 @@ class DouyinUploader:
             logger.info("页面跳转成功，准备输入标题和标签")
             await self.input_video_title_and_tags(page)
 
-            await self.set_declaration(page)
+            # await self.set_declaration(page)
+            # await self.set_ai_generate_declaration(page)
 
             # 点击发布按钮
             await self.publish_video(page)
@@ -110,6 +111,27 @@ class DouyinUploader:
             has_text="取材站外"
         )
         await source_outside_locator.click(force=True)
+
+        await page.wait_for_timeout(500)
+
+        # 点击 '确定' 按钮
+        confirm_button = page.locator(".btnWrapper-gQSo9N span").filter(has_text="确定")
+        await confirm_button.scroll_into_view_if_needed()
+        await confirm_button.click()
+
+    async def set_ai_generate_declaration(self, page):
+        """添加ai生成声明"""
+
+        # 生成声明
+        await page.locator(".addUserDeclaration-Iw_U0p").click()
+
+        await page.wait_for_timeout(500)
+
+        content_network_locator = page.locator("span.semi-radio-addon").filter(
+            has_text="内容由AI生成"
+        )
+        await content_network_locator.scroll_into_view_if_needed()
+        await content_network_locator.click(force=True)
 
         await page.wait_for_timeout(500)
 
